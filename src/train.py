@@ -4,6 +4,7 @@ import shutil
 
 
 def train_model():
+    """
     # 1. Load the Nano model (fastest model, best for CPU training)
     model_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "models", "yolov8n.pt"))
     model = YOLO(model_path) 
@@ -36,7 +37,7 @@ def train_model():
     print(f"Model successfully saved at {model_path}")
 
     return results
-    
+"""
 
 if __name__ == "__main__":
     train_model()
