@@ -1,5 +1,4 @@
 import os
-import cv2
 from ultralytics import YOLO
 
 def calculate_iou(box1, box2):
@@ -27,13 +26,13 @@ def calculate_iou(box1, box2):
 def process_detections(boxes, classes, confidences, names):
     """
     Takes raw YOLO detections, pairs PPE with workers, and returns:
-    1. workers: list of workers with equipment assigned and compliance status.
-    2. ppe_items: list of all detected PPE objects with coordinates and violation flags.
+    1. workers: list of worker dictionaries with compliance status.
+    2. ppe_items: list of all detected individual PPE objects.
     """
     workers = []
     ppe_items = []
 
-    # 1. Separate workers from individual PPE items
+    # 1. Iterate by index over the detections
     for i in range(len(boxes)):
         class_name = names[int(classes[i])]
         is_no_item = class_name.lower().startswith("no-")
@@ -67,7 +66,7 @@ def process_detections(boxes, classes, confidences, names):
         if assigned_worker is not None and best_iou > 0.05:
             assigned_worker["equipment"].append(ppe["class"])
             
-            # If the item is a violation (e.g. No-Helmet, No-Vest), mark the worker as violating
+            # If the item is a violation (e.g. No-Helmet, No-Vest), mark the worker
             if ppe["is_violating"]:
                 assigned_worker["is_violating"] = True
 
@@ -75,8 +74,6 @@ def process_detections(boxes, classes, confidences, names):
 
 
 if __name__ == "__main__":
-    print("Testing the Rule Engine...")
-    
     model_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "models", "best.pt"))
     model = YOLO(model_path)
     
@@ -86,12 +83,12 @@ if __name__ == "__main__":
     
     results = model(test_image, conf=0.15, verbose=False)[0]
     
-    boxes = results.boxes.xyxy.cpu().numpy()
-    classes = results.boxes.cls.cpu().numpy()
-    confidences = results.boxes.conf.cpu().numpy()
-    names = model.names
-    
-    workers, ppe_items = process_detections(boxes, classes, confidences, names)
+    workers, ppe_items = process_detections(
+        boxes=results.boxes.xyxy.cpu().numpy(),
+        classes=results.boxes.cls.cpu().numpy(),
+        confidences=results.boxes.conf.cpu().numpy(),
+        names=model.names
+    )
     
     print(f"Detected {len(workers)} Worker(s) and {len(ppe_items)} PPE item(s).")
     for idx, worker in enumerate(workers):
