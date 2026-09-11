@@ -38,7 +38,7 @@ def run_inference():
                 conf = confidences[i]
                 label = f"{names[cls_id]} {conf:.2f}"
                 
-                is_violation = "NO-" in names[cls_id]
+                is_violation = names[cls_id].lower().startswith("no-")
                 color = (0, 0, 255) if is_violation else (0, 255, 0)
                 
                 cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)

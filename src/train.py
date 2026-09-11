@@ -1,26 +1,42 @@
+from ultralytics import YOLO
 import os
-import urllib.request
+import shutil
 
-def download_pretrained_ppe_model():
-    # Create models directory if it doesn't exist
-    os.makedirs("models", exist_ok=True)
+
+def train_model():
+    # 1. Load the Nano model (fastest model, best for CPU training)
+    model_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "models", "yolov8n.pt"))
+    model = YOLO(model_path) 
     
-    model_path = "models/best.pt"
+    # Path to your data.yaml file
+    data_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "data.yaml"))
+
+    print(f"Starting training on your Roboflow dataset: {data_path}")
+
+
+    # 2. Train the model
+    results = model.train(
+        data=data_path,      
+        epochs=5,             
+        imgsz=640,             
+        batch=4,               
+        project="models",      
+        name="yolo_run",
+        plots=True,
+        device="cpu"      
+    )
+
+    print(f"Model trained..")
     
-    if os.path.exists(model_path):
-        print(f"Pretrained model already exists at {model_path}")
-        return model_path
+    os.makedirs(os.path.dirname(model_path), exist_ok=True)
+
+    exported_path = os.path.join(results.save_dir, "weights", "model_path")
+
+    shutil.copy2(exported_path, model_path)
+    print(f"Model successfully saved at {model_path}")
+
+    return results
     
-    ## Pre-trained model 'yolov8n'
-    url = "https://huggingface.co/keremberke/yolov8m-protective-equipment-detection/resolve/main/best.pt"
-    
-    try:
-        urllib.request.urlretrieve(url, model_path)
-        print(f"Successfully downloaded pretrained model to {model_path}")
-    except Exception as e:
-        print(f"Failed to download the model. Error: {e}")
-        
-    return model_path
 
 if __name__ == "__main__":
-    download_pretrained_ppe_model()
+    train_model()
