@@ -13,6 +13,7 @@ __pycache__/
 # IDE
 .vscode/
 .idea/
+.agents/
 
 # Large Model weights & Raw Datasets (Recommended to download via script/HF)
 models/*.pt
