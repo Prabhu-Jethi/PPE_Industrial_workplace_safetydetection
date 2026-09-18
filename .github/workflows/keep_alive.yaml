@@ -17,4 +17,4 @@ jobs:
         run: |
           curl -L --fail --silent --show-error \
             --max-time 30 \
-            "https://industrial-workplace-safetydetection.streamlit.app/"
+            "https://industrial-workplace-safetydetection.streamlit.app"
